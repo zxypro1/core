@@ -6,6 +6,7 @@ import chalk from 'chalk';
 import path from 'path';
 import { URL } from 'url';
 import decompress, { DecompressOptions } from 'decompress';
+import { spawnSync } from 'child_process';
 import report from '../common/report';
 import commandExists from 'command-exists';
 import execa from 'execa';
@@ -130,7 +131,11 @@ export default async (url: string, dest: string, options: IOptions = {}) => {
         try {
           if (useSystemUnzip) {
             if (restOpts?.strip) {
-              execa.sync('unzip', ['-d', tmpDir, '-o', filePath]);
+              try {
+                execa.sync('unzip', ['-d', tmpDir, '-o', filePath]);
+              } catch {
+                spawnSync('unzip', ['-d', tmpDir, '-o', filePath]);
+              }
               const paths = walkSync(tmpDir);
               for (const p of paths) {
                 const fillPath = path.join(tmpDir, p);
@@ -142,7 +147,11 @@ export default async (url: string, dest: string, options: IOptions = {}) => {
               }
               rimraf.sync(tmpDir);
             } else {
-              execa.sync('unzip', ['-d', dest, '-o', filePath]);
+              try {
+                execa.sync('unzip', ['-d', dest, '-o', filePath]);
+              } catch {
+                spawnSync('unzip', ['-d', dest, '-o', filePath]);
+              }
             }
           } else {
             await decompress(filePath, dest, restOpts);
